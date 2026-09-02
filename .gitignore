@@ -4,3 +4,9 @@ dist-ssr
 *.local
 .DS_Store
 node_modules/.tmp
+.next
+next-env.d.ts
+test-results
+playwright-report
+.env
+.env.local

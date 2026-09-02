@@ -1,25 +1,188 @@
-# CODING AGENTS: READ THIS FIRST
+# CivicOS
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+Government decision-intelligence platform for modelling public spending, regulation, industries
+and infrastructure **before** decisions are taken.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+The workflow the product is built around:
 
-## What you should do — IMPORTANT
+```
+Login → AI Command Centre → Industries & instruments → Model Canvas
+      → Scenario configuration → Agent run → Results → Evidence → Export
+```
 
-**Read the chat transcripts first.** There are 1 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+Every figure in this repository is **illustrative demonstration data** produced by a deterministic
+mock forecast engine. Nothing here is an official statistic, and the UI says so on every screen.
 
-**Read `project/CivicOS.dc.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+---
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+## Quick start
 
-## About the design files
+```bash
+npm install
+npm run dev          # http://localhost:3000
+```
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+No configuration is required. With no environment variables set, the app runs in **demo mode**:
+authentication is mocked and all data comes from a seeded in-memory store.
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+### Signing in (demo mode)
 
-## Bundle contents
+| Field | Value |
+| --- | --- |
+| Email | any address, e.g. `j.delacroix@london.gov.uk` |
+| Password | any 8+ characters |
+| MFA code | any 6 digits **except** `000000` (which demonstrates rejection) |
 
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `CivicOS frontend layout` project files (HTML prototypes, assets, components)
+Two reserved inputs exercise edge states:
+
+- `locked@gov.uk` → account-locked screen
+- MFA code `000000` → invalid-code error
+
+**Roles** are derived from the email local part so each can be explored without a directory:
+`approver@…`, `auditor@…`, `steward@…`, `developer@…`, `reviewer@…`, `admin@…`; anything else is an
+Analyst. The role matrix is enforced in `lib/auth/permissions.ts` and shown in **Governance**.
+
+---
+
+## Scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm start` | Serve the production build |
+| `npm run lint` | TypeScript type-check (strict) |
+| `npm test` | Vitest unit tests |
+| `npm run test:e2e` | Playwright end-to-end suite (builds first) |
+
+The e2e suite runs against a production build on port 3100 and covers the full vertical slice plus
+the access-control states, on desktop and mobile viewports.
+
+---
+
+## Architecture
+
+```
+app/
+  (app)/            Authenticated shell + every application route
+  api/              Typed route handlers (the mock backend)
+  login/            Sign-in, MFA, forgot password, request access
+components/
+  ui/               Radix + cva primitives (shadcn-style)
+  shell/            Sidebar, top bar, global search, session handling
+  command-centre/   Prompt composer with @-reference menu
+  canvas/           React Flow model canvas + node inspector
+  scenarios/        Lever controls and validation surface
+  run/              Live agent orchestration
+  results/          KPI cards, comparison, export
+  evidence/         Evidence drawer
+lib/
+  types.ts          The domain model — the contract for everything
+  data/             Catalogues (industries, instruments, datasets, models) + demo seed
+  engine/           Forecast, validation, graph building, reference parsing
+  services/         Repository interface, in-memory + Firestore implementations, run engine
+  auth/             Auth context, Firebase adapter, role matrix
+  client/           Typed API client and the SSE run-stream hook
+  store/            Zustand workspace state (autosave to sessionStorage)
+```
+
+### Provenance is a first-class concept
+
+Every number carries a `DataClassification`:
+
+`OBSERVED · DERIVED · IMPUTED · SYNTHETIC · FORECAST · SCENARIO_ASSUMPTION`
+
+A metric inherits the **weakest** provenance of its inputs, so a scenario assumption anywhere in the
+lineage makes the output a `SCENARIO_ASSUMPTION` and synthetic input makes it `SYNTHETIC`. Observed
+and synthetic data are never silently combined — the validator raises `mixed_provenance` and the
+badge on the figure changes. Classifications are shown with a glyph as well as a colour, so the
+distinction survives greyscale and colour-blind viewing.
+
+### Forecasts
+
+Each forecast reports baseline, P10, P50, P90, unit, change, source datasets, model and
+classification. The engine (`lib/engine/forecast.ts`) is deterministic — no randomness — so results
+are reproducible and testable, and every relationship is monotone in its drivers.
+
+### The run engine
+
+`lib/services/run-engine.ts` advances a run through weighted agent stages
+(`queued → retrieving → validating → running → complete | warning | failed`) and publishes state
+over Server-Sent Events at `/api/simulations/:id/events`. It reports **operational activity and
+evidence references only** — never model reasoning. High-impact runs (investment ≥ £15bn or UBI ≥
+£800/month) finish in `awaiting_approval`, and export is blocked until an Approver signs off.
+
+The client hook falls back to polling if the stream cannot connect.
+
+---
+
+## Firebase
+
+Firebase is optional and split in two:
+
+**Authentication** (browser) — set the six `NEXT_PUBLIC_FIREBASE_*` variables and sign-in switches
+from the mock provider to Firebase Auth. Government SSO is wired through
+`signInWithPopup`; swap `GoogleAuthProvider` for the OIDC/SAML provider id your identity provider
+issues (`new OAuthProvider('oidc.gov-sso')`) in `lib/auth/context.tsx`.
+
+**Persistence** (server) — set `CIVICOS_PERSISTENCE=firestore` plus the three `FIREBASE_*`
+service-account variables and API routes persist to Firestore instead of the in-memory store.
+Collections: `simulations/{id}`, `results/{id__scenario}`, `audit/{id}`.
+
+If Firestore is requested but credentials are missing, the app logs a warning and falls back to the
+in-memory store rather than failing to boot.
+
+See `.env.example` for every variable and `docs/backend-integration.md` for replacing the mock
+services with real ones.
+
+---
+
+## What is implemented
+
+**The priority vertical slice, in depth**
+
+- Login with password + show/hide, MFA, Government SSO, forgot password, request access,
+  account-locked, session timeout with warning dialog, role-based access control
+- AI Command Centre with a prompt composer, a searchable `@` reference menu
+  (`@industry/transport`, `@policy/ubi`, `@dataset/…`, `@model/…`, `@geography/…`, `@metric/…`),
+  visible chips, geography/horizon/budget controls and six starter prompts
+- Industry (10) and policy-instrument (10) selection with a live connected-system diagram
+- React Flow model canvas: add/remove nodes, connect dependencies, drag to rearrange, node
+  inspector, undo/redo (⌘Z / ⇧⌘Z), save draft, validate, zoom/pan/minimap
+- Scenario configuration across four scenarios with 15 levers, locked levers when the owning
+  instrument is not selected, dependency preview, and validation for missing datasets, invalid
+  assumptions and conflicts
+- Live agent run over SSE with per-agent status, event stream, dataset/model versions, cancellation
+  and partial results
+- Results with nine KPI forecasts, an ECharts trajectory with P10–P90 confidence bands, risks,
+  affected groups, interventions, scenario comparison and evidence summary
+- Evidence drawer and PDF/CSV/JSON export, recorded in the audit log
+
+**Supporting routes** — Simulations, Industries, DataFoundry (with dataset detail pages), Model
+registry, Agents, Audit Centre, Governance, Reports, Settings.
+
+## What is not implemented
+
+Called out honestly, since the original brief is larger than one session:
+
+- **MobilitySim** (MapLibre map layers, fleet controls). No map dependency is installed.
+- **Storybook**. The component library is structured for it but no stories are written.
+- **Prisma/PostgreSQL** — superseded by the Firebase decision.
+- **Real PDF rendering.** `format: 'pdf'` returns a print-ready HTML brief that opens in a new tab
+  for print-to-PDF, so the server needs no PDF dependency. Swap in a renderer at
+  `app/api/simulations/[id]/export/route.ts`.
+- **Dataset registration** (`POST /api/datasets`) returns `501` while the catalogue is static.
+- Accessibility work follows WCAG 2.2 AA (keyboard paths, visible focus, semantic tables and
+  captions, chart text alternatives, reduced motion, 44px touch targets, colour-independent status)
+  but has not been through an audit with assistive technology.
+
+---
+
+## Design
+
+Institutional, calm and auditable: midnight/navy shell, civic blue accent, 8px spacing, 224px
+sidebar, 64px top bar, thin borders, 8px radii, minimal shadows. Tokens live in `app/globals.css`
+and are the single source of colour truth.
+
+The original Claude Design prototype this grew from is preserved in `project/`, with the design
+conversation in `chats/` and the handoff instructions in `docs/design-handoff.md`.

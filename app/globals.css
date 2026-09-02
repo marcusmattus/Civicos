@@ -1,0 +1,157 @@
+@import 'tailwindcss';
+
+/*
+ * CivicOS design tokens.
+ *
+ * Institutional palette from the product spec — calm, precise, auditable.
+ * 8px spacing system, thin borders, 8px radii, minimal shadows.
+ */
+@theme {
+  --font-sans: 'Inter', 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Core palette */
+  --color-midnight: #07182b;
+  --color-navy: #0b2440;
+  --color-navy-line: #1b3a5c;
+  --color-navy-dim: #3a5a80;
+  --color-navy-muted: #8ea3c0;
+  --color-navy-soft: #b7c4d9;
+
+  --color-civic: #2563eb;
+  --color-civic-deep: #1d4ed8;
+  --color-civic-link: #1d70b8;
+  --color-civic-tint: #eef4ff;
+  --color-civic-tint-strong: #dbe4f5;
+  --color-civic-ring: #bcd2f7;
+
+  --color-cyan: #06b6d4;
+  --color-teal: #0f9d83;
+  --color-teal-tint: #ecfdf5;
+  --color-teal-line: #b7ebd6;
+
+  --color-canvas: #f6f8fb;
+  --color-surface: #ffffff;
+  --color-ink: #152033;
+  --color-muted: #667085;
+  --color-faint: #98a2b3;
+  --color-line: #d8dee8;
+  --color-line-soft: #f0f2f6;
+  --color-line-softer: #f5f6f8;
+  --color-line-hair: #e5e9f0;
+  --color-line-strong: #c7cedb;
+
+  --color-warning: #d97706;
+  --color-warning-ink: #92600a;
+  --color-warning-tint: #fffbeb;
+  --color-warning-line: #fbe4ac;
+  --color-danger: #dc2626;
+  --color-danger-tint: #fef2f2;
+  --color-danger-line: #fecaca;
+
+  /* Shell metrics from the spec */
+  --spacing-sidebar: 224px;
+  --spacing-topbar: 64px;
+
+  --radius-card: 8px;
+  --shadow-card: 0 1px 2px rgba(21, 32, 51, 0.04);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 24px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-line-strong);
+    border-radius: 4px;
+  }
+
+  a {
+    color: var(--color-civic);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-civic-link);
+    text-decoration: underline;
+  }
+
+  /* WCAG 2.2 AA: focus must always be visible and never clipped. */
+  :focus-visible {
+    outline: 2px solid var(--color-civic);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Respect a reduced-motion preference across the whole app. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  @media (forced-colors: active) {
+    * {
+      forced-color-adjust: auto;
+    }
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Visible only to screen readers, but focusable (skip links). */
+@utility sr-only-focusable {
+  &:not(:focus) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+
+/* React Flow surface tuning so the canvas matches the institutional palette. */
+.react-flow__attribution {
+  display: none;
+}
+
+.react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background: var(--color-civic);
+  border: 1px solid var(--color-surface);
+}
+
+.react-flow__edge-path {
+  stroke: var(--color-line-strong);
+  stroke-width: 1.5;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--color-civic);
+}
