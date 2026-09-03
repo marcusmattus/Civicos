@@ -65,7 +65,10 @@ export function RunScreen() {
   const router = useRouter()
   const workspace = useWorkspace()
   const simulationId = workspace.simulationId
-  const { run: streamed, status: streamStatus } = useRunStream(simulationId)
+  const { run: streamed, status: streamStatus } = useRunStream(
+    simulationId,
+    workspace.activeScenario,
+  )
   const [fallback, setFallback] = useState<RunState | null>(null)
   const [evidenceOpen, setEvidenceOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)

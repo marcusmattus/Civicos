@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import type { RunState } from '../types'
+import type { RunState, ScenarioKey } from '../types'
 
 export type StreamStatus = 'idle' | 'connecting' | 'streaming' | 'closed' | 'error'
 
@@ -9,9 +9,15 @@ export type StreamStatus = 'idle' | 'connecting' | 'streaming' | 'closed' | 'err
  * Subscribes to the Server-Sent Events run stream.
  *
  * The stream closes itself once the run reaches a terminal state; a dropped
- * connection before then is retried with a short backoff.
+ * connection before then is retried with a short backoff. `scenario` tells the
+ * server which scenario to run if it has no run in progress for this
+ * simulation — see the events route for why the stream can start one.
  */
-export function useRunStream(simulationId: string | null, enabled = true) {
+export function useRunStream(
+  simulationId: string | null,
+  scenario?: ScenarioKey,
+  enabled = true,
+) {
   const [run, setRun] = useState<RunState | null>(null)
   const [status, setStatus] = useState<StreamStatus>('idle')
   const sourceRef = useRef<EventSource | null>(null)
@@ -30,7 +36,8 @@ export function useRunStream(simulationId: string | null, enabled = true) {
       if (cancelled) return
       setStatus('connecting')
 
-      const source = new EventSource(`/api/simulations/${simulationId}/events`)
+      const query = scenario ? `?scenario=${scenario}` : ''
+      const source = new EventSource(`/api/simulations/${simulationId}/events${query}`)
       sourceRef.current = source
 
       source.addEventListener('run', (event) => {
@@ -74,7 +81,7 @@ export function useRunStream(simulationId: string | null, enabled = true) {
       sourceRef.current?.close()
       sourceRef.current = null
     }
-  }, [simulationId, enabled])
+  }, [simulationId, scenario, enabled])
 
   return { run, status }
 }
