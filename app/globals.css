@@ -7,7 +7,8 @@
  * 8px spacing system, thin borders, 8px radii, minimal shadows.
  */
 @theme {
-  --font-sans: 'Inter', 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Inter ships with the design system; the rest are system fallbacks. */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* Core palette */
   --color-midnight: #07182b;

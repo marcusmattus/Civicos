@@ -13,7 +13,8 @@
     "predev": "node scripts/copy-maplibre-worker.mjs",
     "prebuild": "node scripts/copy-maplibre-worker.mjs",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "build:ds": "node scripts/build-design-system.mjs && tsc -p tsconfig.ds.json"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -47,6 +48,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@fontsource/inter": "^5.3.0",
     "@playwright/test": "^1.56.0",
     "@storybook/addon-a11y": "^10.6.0",
     "@storybook/addon-docs": "^10.6.0",
@@ -64,5 +66,7 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.6",
     "vitest": "^3.2.4"
-  }
+  },
+  "types": "./dist/design-system/index.d.ts",
+  "module": "./dist/index.mjs"
 }

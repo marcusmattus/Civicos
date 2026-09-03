@@ -1,0 +1,44 @@
+{
+  "shape": "storybook",
+  "pkg": "civicos",
+  "globalName": "CivicOS",
+  "storybookConfigDir": ".storybook",
+  "storybookStatic": ".design-sync/sb-reference",
+  "buildCmd": "npm run build:ds",
+  "readmeHeader": ".design-sync/conventions.md",
+  "titleMap": {
+    "Classification": "ClassificationBadge",
+    "Status": "AgentStatusBadge",
+    "KPI card": "KpiCard",
+    "States": "EmptyState",
+    "KPIcard": "KpiCard"
+  },
+  "overrides": {
+    "AgentStatusBadge": {
+      "cardMode": "column"
+    },
+    "KpiCard": {
+      "cardMode": "column"
+    },
+    "EmptyState": {
+      "cardMode": "column"
+    },
+    "Input": {
+      "cardMode": "column"
+    },
+    "Slider": {
+      "cardMode": "column"
+    },
+    "Tooltip": {
+      "cardMode": "single",
+      "primaryStory": "Default"
+    }
+  },
+  "extraFonts": [
+    ".design-sync/fonts/inter.css",
+    ".design-sync/fonts/inter-latin-400-normal.woff2",
+    ".design-sync/fonts/inter-latin-500-normal.woff2",
+    ".design-sync/fonts/inter-latin-600-normal.woff2",
+    ".design-sync/fonts/inter-latin-700-normal.woff2"
+  ]
+}
