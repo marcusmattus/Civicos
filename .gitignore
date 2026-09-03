@@ -12,3 +12,4 @@ playwright-report
 .env.local
 tsconfig.tsbuildinfo
 public/maplibre
+storybook-static

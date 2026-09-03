@@ -54,6 +54,8 @@ Analyst. The role matrix is enforced in `lib/auth/permissions.ts` and shown in *
 | `npm run lint` | TypeScript type-check (strict) |
 | `npm test` | Vitest unit tests |
 | `npm run test:e2e` | Playwright end-to-end suite (builds first) |
+| `npm run storybook` | Component workshop on port 6006 |
+| `npm run build-storybook` | Static Storybook build |
 
 The e2e suite runs against a production build on port 3100 and covers the full vertical slice plus
 the access-control states, on desktop and mobile viewports.
@@ -76,6 +78,8 @@ components/
   run/              Live agent orchestration
   results/          KPI cards, comparison, export
   evidence/         Evidence drawer
+  mobility/         MobilitySim map, controls and outcomes
+.storybook/         Storybook config, previewing against app/globals.css
 lib/
   types.ts          The domain model — the contract for everything
   data/             Catalogues (industries, instruments, datasets, models) + demo seed
@@ -115,6 +119,16 @@ evidence references only** — never model reasoning. High-impact runs (investme
 The client hook falls back to polling if the stream cannot connect.
 
 ---
+
+## MapLibre worker
+
+MapLibre v6 spawns its GeoJSON worker as a separate ES module that Next's bundler does not emit.
+`scripts/copy-maplibre-worker.mjs` copies it into `public/maplibre/` (wired to `predev` and
+`prebuild`) and the map binds it with `setWorkerUrl`. Without that step the worker 404s, no source
+finishes loading, and the map silently paints its background and nothing else.
+
+The map style is self-contained — no tile server and no API key — so it renders offline. Swap the
+`background` layer for a raster or vector source when a licensed basemap is available.
 
 ## Firebase
 
@@ -158,6 +172,15 @@ services with real ones.
   affected groups, interventions, scenario comparison and evidence summary
 - Evidence drawer and PDF/CSV/JSON export, recorded in the audit log
 
+**MobilitySim** — MapLibre autonomous-transport sandbox: approved, pilot and restricted zones,
+pickup points, charging depots, congestion, accessibility coverage and safety incidents as
+toggleable layers, ten licence and operating controls, the implied seven-class fleet mix, and eight
+modelled outcomes with the licence conditions the settings would breach.
+
+**Storybook** — 45 stories across 13 components, rendered against the app's own `globals.css` so
+tokens cannot drift. Domain stories (KPI card, classification, status) pull real values from the
+forecast engine.
+
 **Supporting routes** — Simulations, Industries, DataFoundry (with dataset detail pages), Model
 registry, Agents, Audit Centre, Governance, Reports, Settings.
 
@@ -165,8 +188,6 @@ registry, Agents, Audit Centre, Governance, Reports, Settings.
 
 Called out honestly, since the original brief is larger than one session:
 
-- **MobilitySim** (MapLibre map layers, fleet controls). No map dependency is installed.
-- **Storybook**. The component library is structured for it but no stories are written.
 - **Prisma/PostgreSQL** — superseded by the Firebase decision.
 - **Real PDF rendering.** `format: 'pdf'` returns a print-ready HTML brief that opens in a new tab
   for print-to-PDF, so the server needs no PDF dependency. Swap in a renderer at
