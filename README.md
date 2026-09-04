@@ -6,9 +6,12 @@ and infrastructure **before** decisions are taken.
 The workflow the product is built around:
 
 ```
-Login → AI Command Centre → Industries & instruments → Model Canvas
-      → Scenario configuration → Agent run → Results → Evidence → Export
+Landing → Login → AI Command Centre → Industries & instruments → Model Canvas
+        → Scenario configuration → Agent run → Results → Evidence → Export
 ```
+
+`/` is a public landing page. The authenticated application starts at `/command-centre`; every
+application route redirects to `/login` when there is no session.
 
 Every figure in this repository is **illustrative demonstration data** produced by a deterministic
 mock forecast engine. Nothing here is an official statistic, and the UI says so on every screen.
@@ -66,11 +69,13 @@ the access-control states, on desktop and mobile viewports.
 
 ```
 app/
+  page.tsx          Public landing page (the only unauthenticated app route)
   (app)/            Authenticated shell + every application route
   api/              Typed route handlers (the mock backend)
   login/            Sign-in, MFA, forgot password, request access
 components/
   ui/               Radix + cva primitives (shadcn-style)
+  marketing/        The public landing page
   shell/            Sidebar, top bar, global search, session handling
   command-centre/   Prompt composer with @-reference menu
   canvas/           React Flow model canvas + node inspector
@@ -155,6 +160,9 @@ services with real ones.
 
 **The priority vertical slice, in depth**
 
+- A public landing page at `/` — the workflow, the provenance model, the capability set and the
+  governance story, with every figure counted from the catalogue rather than typed in, so the page
+  cannot drift from the product
 - Login with password + show/hide, MFA, Government SSO, forgot password, request access,
   account-locked, session timeout with warning dialog, role-based access control
 - AI Command Centre with a prompt composer, a searchable `@` reference menu

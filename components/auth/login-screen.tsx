@@ -328,7 +328,7 @@ export function LoginScreen() {
   const [panel, setPanel] = useState<Panel>('credentials')
 
   useEffect(() => {
-    if (status === 'signed_in') router.replace('/')
+    if (status === 'signed_in') router.replace('/command-centre')
   }, [status, router])
 
   useEffect(() => {

@@ -25,7 +25,7 @@ export type NavItem = {
 }
 
 export const navItems: NavItem[] = [
-  { label: 'Command Centre', href: '/' as Route, icon: LayoutDashboard, breadcrumb: ['Command Centre'] },
+  { label: 'Command Centre', href: '/command-centre' as Route, icon: LayoutDashboard, breadcrumb: ['Command Centre'] },
   {
     label: 'Model Canvas',
     href: '/model' as Route,

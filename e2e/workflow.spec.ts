@@ -171,3 +171,25 @@ test.describe('access control and states', () => {
     await expect(page.getByRole('heading', { name: 'Account locked' })).toBeVisible()
   })
 })
+
+test.describe('landing page', () => {
+  test('serves a public front door that routes into sign-in', async ({ page }) => {
+    await page.goto('/')
+    await expect(
+      page.getByRole('heading', { name: /Model the consequences before the decision/ }),
+    ).toBeVisible()
+
+    // The counts are read from the catalogue, so a stale figure fails here.
+    await expect(page.getByRole('term').filter({ hasText: /^Policy instruments$/ })).toBeVisible()
+    await expect(page.getByRole('definition').filter({ hasText: /^10$/ }).first()).toBeVisible()
+
+    await page.getByRole('link', { name: 'Open the platform' }).click()
+    await expect(page).toHaveURL(/\/login/)
+    await expect(page.getByRole('heading', { name: 'Welcome to CivicOS' })).toBeVisible()
+  })
+
+  test('lands on the command centre after sign-in', async ({ page }) => {
+    await signIn(page)
+    await expect(page).toHaveURL(/\/command-centre/)
+  })
+})

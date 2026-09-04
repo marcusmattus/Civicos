@@ -26,7 +26,7 @@ export function SimulationsScreen() {
         title="Simulations"
         description="Every simulation in your organisation, with its owner and current state."
         actions={
-          <Button variant="primary" className="gap-1.5" onClick={() => router.push('/')}>
+          <Button variant="primary" className="gap-1.5" onClick={() => router.push('/command-centre')}>
             <Plus className="h-4 w-4" aria-hidden="true" />
             New simulation
           </Button>
@@ -50,7 +50,7 @@ export function SimulationsScreen() {
           title="No simulations yet"
           description="Describe a public system in the Command Centre to create your first simulation."
           action={
-            <Button variant="primary" onClick={() => router.push('/')}>
+            <Button variant="primary" onClick={() => router.push('/command-centre')}>
               Go to Command Centre
             </Button>
           }

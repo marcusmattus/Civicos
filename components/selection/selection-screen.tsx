@@ -151,7 +151,7 @@ export function SelectionScreen() {
               Continue to model canvas
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Button>
-            <Button onClick={() => router.push('/')}>Back to Command Centre</Button>
+            <Button onClick={() => router.push('/command-centre')}>Back to Command Centre</Button>
           </div>
         </aside>
       </div>

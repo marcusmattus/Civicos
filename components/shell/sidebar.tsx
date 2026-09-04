@@ -10,7 +10,7 @@ import { cn } from '../ui/utils'
 export function SidebarBrand({ collapsed }: { collapsed?: boolean }) {
   return (
     <Link
-      href="/"
+      href="/command-centre"
       className="flex items-center gap-2.5 px-2 py-2 text-white no-underline hover:no-underline"
     >
       <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-md bg-civic">
@@ -33,7 +33,7 @@ export function SidebarNav({
   return (
     <nav aria-label="Main" className="flex flex-col gap-0.5 overflow-y-auto px-3">
       {navItems.map((item) => {
-        const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+        const active = pathname === item.href || pathname.startsWith(`${item.href}/`)
         const Icon = item.icon
         return (
           <Link
